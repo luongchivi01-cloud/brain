@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧬 BRAINROT FUSION LAB</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Space+Mono:wght@400;700&display=swap');
+:root{--g:#00ff41;--p:#ff006e;--y:#ffbe0b;--c:#00f5ff;--v:#bf5af2;--bg:#04040f;--card:rgba(8,8,28,0.93)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);font-family:'Space Mono',monospace;color:#fff;min-height:100vh;overflow-x:hidden;cursor:crosshair}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,65,.04)1px,transparent 1px),linear-gradient(90deg,rgba(0,255,65,.04)1px,transparent 1px);background-size:48px 48px;animation:gridMove 20s linear infinite;pointer-events:none;z-index:0}
+@keyframes gridMove{to{background-position:48px 48px}}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.1)3px,rgba(0,0,0,.1)4px);pointer-events:none;z-index:0}
+canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:1140px;margin:0 auto;padding:16px}
+
+/* HEADER */
+header{text-align:center;padding:28px 0 14px}
+.logo{font-family:'Bangers',cursive;font-size:clamp(36px,8vw,76px);letter-spacing:5px;background:linear-gradient(120deg,var(--g),var(--c),var(--p),var(--y));background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:logoShift 4s linear infinite;filter:drop-shadow(0 0 22px rgba(0,255,65,.4))}
+@keyframes logoShift{0%{background-position:0%}100%{background-position:300%}}
+.subtitle{color:var(--y);font-size:10px;letter-spacing:4px;margin-top:5px;opacity:.7}
+.ai-status{margin:10px auto 0;max-width:740px;background:rgba(0,245,255,.045);border:1px solid rgba(0,245,255,.18);border-radius:14px;padding:10px 14px;text-align:center;font-size:9px;color:rgba(255,255,255,.62);letter-spacing:2px;line-height:1.6}
+.ai-status b{color:var(--g)}
+
+/* ARENA GRID */
+.arena{display:grid;grid-template-columns:1fr 96px 1fr;gap:12px;align-items:start;margin:18px 0}
+
+/* SLOT */
+.slot{background:var(--card);border:1px solid rgba(0,255,65,.2);border-radius:18px;padding:16px;backdrop-filter:blur(12px);transition:border-color .3s,box-shadow .3s}
+.slot.active{border-color:rgba(0,245,255,.55);box-shadow:0 0 28px rgba(0,245,255,.12)}
+.slot-label{font-family:'Bangers',cursive;font-size:13px;letter-spacing:3px;color:var(--c);text-align:center;margin-bottom:12px}
+
+/* IMAGE FRAME */
+.img-frame{width:100%;aspect-ratio:1;max-width:230px;margin:0 auto 14px;border-radius:14px;overflow:hidden;position:relative;background:#08082a;box-shadow:0 8px 32px rgba(0,0,0,.6);animation:tilt3d 5s ease-in-out infinite}
+@keyframes tilt3d{0%,100%{transform:perspective(700px) rotateY(-7deg) rotateX(4deg)}50%{transform:perspective(700px) rotateY(7deg) rotateX(-4deg)}}
+.img-frame img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .4s,transform .4s}
+.img-frame img:hover{transform:scale(1.06)}
+.img-frame .shimmer{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,245,255,.07),rgba(0,0,0,0));background-size:200%;animation:shim 1.3s ease infinite;display:none}
+@keyframes shim{0%{background-position:-200%}100%{background-position:200%}}
+.img-frame .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:11px;color:rgba(255,255,255,.3);letter-spacing:2px}
+.ph-icon{font-size:52px}
+
+/* INFO */
+.mname{font-family:'Bangers',cursive;font-size:17px;letter-spacing:2px;text-align:center;color:var(--y);margin-bottom:3px}
+.mtype{font-size:8px;text-align:center;color:rgba(255,255,255,.38);letter-spacing:2px;margin-bottom:7px;text-transform:uppercase}
+.mdesc{font-size:9px;color:rgba(255,255,255,.55);line-height:1.65;text-align:center;min-height:34px}
+.traits{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:9px}
+.trait{background:rgba(0,245,255,.08);border:1px solid rgba(0,245,255,.2);border-radius:20px;padding:2px 8px;font-size:8px;color:var(--c);letter-spacing:1px}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:10px}
+.stat{font-size:8px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:4px}
+.stat b{color:var(--y)}
+.pwr-mini{flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.pwr-mini-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--c));border-radius:2px}
+
+.btn-pick{width:100%;margin-top:12px;padding:10px;background:transparent;border:1px solid rgba(0,255,65,.4);border-radius:9px;color:var(--g);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .2s}
+.btn-pick:hover{background:rgba(0,255,65,.1);box-shadow:0 0 18px rgba(0,255,65,.25);transform:translateY(-2px)}
+.btn-rand{width:100%;margin-top:5px;padding:7px;background:rgba(191,90,242,.07);border:1px solid rgba(191,90,242,.3);border-radius:9px;color:var(--v);font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .2s}
+.btn-rand:hover{background:rgba(191,90,242,.15)}
+
+/* CENTER */
+.center{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:52px}
+.plus{font-size:34px;color:var(--y);filter:drop-shadow(0 0 12px rgba(255,190,11,.7));animation:plusBob 2s ease-in-out infinite}
+@keyframes plusBob{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.22) rotate(12deg)}}
+.btn-fuse{padding:14px 18px;background:linear-gradient(135deg,var(--g),var(--c));border:none;border-radius:50px;color:#000;font-family:'Bangers',cursive;font-size:18px;letter-spacing:3px;cursor:pointer;transition:all .3s;box-shadow:0 4px 24px rgba(0,255,65,.4);white-space:nowrap;line-height:1.4;text-align:center}
+.btn-fuse:hover:not(:disabled){transform:scale(1.08) translateY(-3px);box-shadow:0 8px 36px rgba(0,255,65,.6)}
+.btn-fuse:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-fuse.busy{animation:fusePulse .35s ease infinite alternate}
+@keyframes fusePulse{from{box-shadow:0 4px 22px rgba(0,255,65,.4)}to{box-shadow:0 10px 44px rgba(255,0,110,.75)}}
+.hint{font-size:8px;color:rgba(255,255,255,.22);letter-spacing:2px;text-align:center;line-height:1.7}
+
+/* LOADING */
+.loading{display:none;text-align:center;padding:44px 16px}
+.loading.on{display:block}
+.dna-spin{font-size:68px;display:block;margin-bottom:12px;animation:dna 0.65s linear infinite}
+@keyframes dna{0%{transform:rotateY(0deg) scale(1)}50%{transform:rotateY(180deg) scale(1.3)}100%{transform:rotateY(360deg) scale(1)}}
+.load-txt{font-family:'Bangers',cursive;font-size:22px;letter-spacing:5px;color:var(--g);animation:blink .45s ease infinite alternate}
+@keyframes blink{from{opacity:.25}to{opacity:1}}
+
+/* RESULT */
+.result{display:none;margin-top:16px;background:var(--card);border:2px solid var(--p);border-radius:20px;padding:26px;backdrop-filter:blur(14px);box-shadow:0 0 50px rgba(255,0,110,.18),0 24px 60px rgba(0,0,0,.5);position:relative;overflow:hidden}
+.result.on{display:block;animation:resultIn .5s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes resultIn{from{transform:scale(.82) translateY(24px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.result::before{content:'';position:absolute;inset:-50%;background:conic-gradient(transparent,rgba(255,0,110,.04),transparent,rgba(0,255,65,.04),transparent);animation:spinCone 14s linear infinite;pointer-events:none}
+@keyframes spinCone{to{transform:rotate(360deg)}}
+
+.result-inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.result-label{font-family:'Bangers',cursive;font-size:11px;letter-spacing:5px;color:var(--p);text-align:center;grid-column:1/-1;margin-bottom:4px}
+
+/* FUSION IMAGE */
+.fusion-img-wrap{border-radius:16px;overflow:hidden;box-shadow:0 0 50px rgba(255,0,110,.3),0 14px 40px rgba(0,0,0,.7);position:relative;background:#0a0a22;aspect-ratio:1}
+.fusion-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.fusion-badge{position:absolute;bottom:0;left:0;right:0;padding:10px 12px;background:linear-gradient(transparent,rgba(0,0,0,.85));font-family:'Bangers',cursive;font-size:15px;letter-spacing:2px;color:var(--y);text-align:center;text-shadow:0 0 12px rgba(255,190,11,.5)}
+.fshim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0),rgba(255,0,110,.06),rgba(0,0,0,0));background-size:200%;animation:shim 1.3s ease infinite;z-index:2;display:none}
+
+/* RESULT INFO */
+.rinfo{display:flex;flex-direction:column;gap:12px}
+.rname{font-family:'Bangers',cursive;font-size:clamp(20px,4vw,34px);letter-spacing:3px;background:linear-gradient(135deg,var(--y),var(--p));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 8px rgba(255,190,11,.3))}
+.rarity-badge{display:inline-block;font-size:9px;letter-spacing:3px;padding:3px 12px;border-radius:20px;margin-top:2px}
+.rarity-badge.common{background:rgba(150,150,150,.2);color:#aaa;border:1px solid #555}
+.rarity-badge.rare{background:rgba(30,80,255,.2);color:#7af;border:1px solid #36f}
+.rarity-badge.epic{background:rgba(150,0,255,.2);color:#d5f;border:1px solid #90f}
+.rarity-badge.legendary{background:rgba(255,160,0,.2);color:#fc0;border:1px solid #f90;animation:legGlow 1.5s ease infinite alternate}
+@keyframes legGlow{from{box-shadow:none}to{box-shadow:0 0 18px rgba(255,200,0,.45)}}
+.rdesc{font-size:10px;line-height:1.8;color:rgba(255,255,255,.78);border-left:2px solid var(--p);padding-left:12px}
+.rlore{font-size:9px;color:rgba(255,255,255,.38);font-style:italic;line-height:1.7}
+.rabilities{display:flex;flex-wrap:wrap;gap:6px}
+.rability{background:rgba(255,0,110,.12);border:1px solid rgba(255,0,110,.35);border-radius:20px;padding:4px 11px;font-size:8px;color:var(--p);letter-spacing:2px;text-transform:uppercase}
+.rpwr{display:flex;align-items:center;gap:10px;font-size:9px;color:var(--y);letter-spacing:2px}
+.rpwr-bar{flex:1;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.rpwr-fill{height:100%;background:linear-gradient(90deg,var(--y),var(--p));border-radius:4px;width:0;transition:width 1.2s cubic-bezier(.25,.46,.45,.94)}
+.rparents{font-size:8px;color:rgba(255,255,255,.3);letter-spacing:1px}
+.rparents b{color:rgba(255,255,255,.5)}
+
+/* PICKER OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;backdrop-filter:blur(7px);padding:16px;overflow-y:auto}
+.overlay.on{display:flex;align-items:flex-start;justify-content:center}
+.picker{background:#06061c;border:1px solid var(--c);border-radius:20px;padding:22px;width:100%;max-width:740px;margin-top:28px;box-shadow:0 0 50px rgba(0,245,255,.15);position:relative}
+.picker-title{font-family:'Bangers',cursive;font-size:26px;letter-spacing:3px;color:var(--c);text-align:center;margin-bottom:14px}
+.picker-search{width:100%;background:rgba(0,245,255,.05);border:1px solid rgba(0,245,255,.3);border-radius:9px;padding:10px 14px;color:#fff;font-family:'Space Mono',monospace;font-size:11px;margin-bottom:14px;outline:none;transition:border-color .2s}
+.picker-search:focus{border-color:var(--c)}
+.picker-search::placeholder{color:rgba(255,255,255,.3)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:9px;max-height:56vh;overflow-y:auto;padding-right:3px}
+.pgrid::-webkit-scrollbar{width:3px}
+.pgrid::-webkit-scrollbar-thumb{background:var(--c);border-radius:2px}
+.pcard{background:rgba(0,245,255,.04);border:1px solid rgba(0,245,255,.15);border-radius:11px;padding:10px 6px;cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pcard:hover{background:rgba(0,245,255,.11);border-color:var(--c);transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,245,255,.15)}
+.pcard-img{width:76px;height:76px;border-radius:8px;object-fit:cover;border:1px solid rgba(0,245,255,.15);background:#0a0a20;display:block}
+.pcard-name{font-family:'Bangers',cursive;font-size:10px;letter-spacing:1px;color:var(--y);line-height:1.3}
+.btn-x{position:absolute;top:14px;right:14px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:50%;width:30px;height:30px;color:rgba(255,255,255,.5);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.btn-x:hover{border-color:var(--p);color:var(--p)}
+
+/* HISTORY */
+.history{margin-top:26px;padding-top:18px;border-top:1px solid rgba(0,255,65,.12)}
+.h-title{font-family:'Bangers',cursive;font-size:20px;letter-spacing:3px;color:var(--g);margin-bottom:12px}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.hcard{background:rgba(0,255,65,.04);border:1px solid rgba(0,255,65,.12);border-radius:12px;padding:10px;cursor:pointer;transition:all .2s;text-align:center}
+.hcard:hover{background:rgba(0,255,65,.08);border-color:var(--g);transform:translateY(-2px)}
+.hcard-img{width:80px;height:80px;border-radius:8px;object-fit:cover;display:block;margin:0 auto 6px;background:#0a0a20}
+.hcard-name{font-family:'Bangers',cursive;font-size:10px;color:var(--y);letter-spacing:1px}
+.hcard-par{font-size:7px;color:rgba(255,255,255,.28);margin-top:2px}
+
+/* SPARK */
+.spark{position:fixed;width:5px;height:5px;border-radius:50%;pointer-events:none;z-index:999;animation:sparkFly .85s ease-out forwards}
+@keyframes sparkFly{0%{transform:translate(0,0) scale(1.8);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+
+.footer{text-align:center;padding:18px;font-size:8px;color:rgba(255,255,255,.13);letter-spacing:3px}
+
+@media(max-width:640px){
+  .arena{grid-template-columns:1fr;gap:10px}
+  .center{flex-direction:row;padding-top:0;justify-content:center}
+  .result-inner{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="wrap">
+
+<header>
+  <div class="logo">🧬 BRAINROT FUSION LAB</div>
+  <div class="subtitle">⚡ CHỌN 2 QUÁI VẬT · AI TẠO SINH VẬT + ẢNH MỚI HOÀN TOÀN ⚡</div>
+<div class="ai-status" id="aiStatus">🌐 <b>WEB APP MODE</b> · 1 link duy nhất, frontend gọi backend cùng domain.</div>
+</header>
+
+<div class="arena">
+  <!-- SLOT 1 -->
+  <div class="slot" id="slot1">
+    <div class="slot-label">🔵 MONSTER #1</div>
+    <div class="img-frame" id="frame1">
+      <div class="ph" id="ph1"><span class="ph-icon">❓</span><span>CHƯA CHỌN</span></div>
+      <img id="img1" style="opacity:0" alt=""/>
+      <div class="shimmer" id="shim1"></div>
+    </div>
+    <div class="mname" id="mname1">Chưa chọn</div>
+    <div class="mtype" id="mtype1">—</div>
+    <div class="mdesc" id="mdesc1">Nhấn để chọn một con quái vật</div>
+    <div class="traits" id="mtraits1"></div>
+    <div class="stat-row" id="mstats1"></div>
+    <button class="btn-pick" onclick="openPicker(1)">⚡ CHỌN QUÁI VẬT</button>
+    <button class="btn-rand" onclick="randPick(1)">🎲 NGẪU NHIÊN</button>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center">
+    <div class="plus">+</div>
+    <button class="btn-fuse" id="btnFuse" disabled onclick="doFusion()">🧬<br>FUSION!</button>
+    <div class="hint">CHỌN 2 CON<br>RỒI FUSION</div>
+  </div>
+
+  <!-- SLOT 2 -->
+  <div class="slot" id="slot2">
+    <div class="slot-label">🔴 MONSTER #2</div>
+    <div class="img-frame" id="frame2" style="animation-delay:-2.5s">
+      <div class="ph" id="ph2"><span class="ph-icon">❓</span><span>CHƯA CHỌN</span></div>
+      <img id="img2" style="opacity:0" alt=""/>
+      <div class="shimmer" id="shim2"></div>
+    </div>
+    <div class="mname" id="mname2">Chưa chọn</div>
+    <div class="mtype" id="mtype2">—</div>
+    <div class="mdesc" id="mdesc2">Nhấn để chọn một con quái vật</div>
+    <div class="traits" id="mtraits2"></div>
+    <div class="stat-row" id="mstats2"></div>
+    <button class="btn-pick" onclick="openPicker(2)">⚡ CHỌN QUÁI VẬT</button>
+    <button class="btn-rand" onclick="randPick(2)">🎲 NGẪU NHIÊN</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <span class="dna-spin">🧬</span>
+  <div class="load-txt" id="loadTxt">ĐANG FUSION...</div>
+</div>
+
+<!-- RESULT -->
+<div class="result" id="result">
+  <div class="result-inner">
+    <div class="result-label">⚡ FUSION RESULT ⚡</div>
+    <div>
+      <div class="fusion-img-wrap" id="fImgWrap">
+        <img id="fImg" alt="fusion"/>
+        <div class="fshim" id="fShim"></div>
+        <div class="fusion-badge" id="fBadge"></div>
+      </div>
+    </div>
+    <div class="rinfo">
+      <div>
+        <div class="rname" id="rName">???</div>
+        <div id="rRarity"></div>
+        <div class="rparents" id="rParents" style="margin-top:5px"></div>
+      </div>
+      <div class="rdesc" id="rDesc"></div>
+      <div class="rlore" id="rLore"></div>
+      <div class="rabilities" id="rAbilities"></div>
+      <div class="rpwr">
+        <span>PWR</span>
+        <div class="rpwr-bar"><div class="rpwr-fill" id="rPwrFill"></div></div>
+        <span id="rPwrNum">0</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="history" id="histSec" style="display:none">
+  <div class="h-title">📚 FUSION HISTORY</div>
+  <div class="hgrid" id="hgrid"></div>
+</div>
+
+<div class="footer">BRAINROT FUSION LAB v3 · IMAGES: ITALIANBRAINROTCHARACTERS.COM · AI: CLAUDE SONNET</div>
+</div>
+
+<!-- PICKER -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="picker">
+    <button class="btn-x" onclick="closePicker()">✕</button>
+    <div class="picker-title">🎯 CHỌN QUÁI VẬT</div>
+    <input class="picker-search" id="psearch" type="text" placeholder="🔍 Tìm tên..." oninput="filterP(this.value)"/>
+    <div class="pgrid" id="pgrid"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════ DATA ═══════════════════
+const BASE = 'https://italianbrainrotcharacters.com/thumb/';
+const MONSTERS = [
+  {id:'tralalero-tralala',      name:'TRALALERO TRALALA',       type:'Cá mập 3 chân • Nike Sneaker',   desc:'OG của Italian Brainrot. Cá mập 3 chân mang giày Nike xanh, chạy tốc độ âm thanh và chơi Fortnite với con cái Tralalalalitos.', traits:['Nike Speed','Fortnite Pro','3 Chân','Sonic Run'], hp:85, atk:100, def:70, spd:90},
+  {id:'bombardiro-crocodilo',   name:'BOMBARDIRO CROCODILO',    type:'Cá sấu • Máy bay ném bom WWII',  desc:'Đầu cá sấu gắn thân máy bay ném bom B-17. Kẻ thù không đội trời chung của Tralalero. Ném bom từ trên trời.', traits:['Bay Mach 1','Ném Bom','WWII Mode','Rival'], hp:90, atk:95, def:85, spd:80},
+  {id:'tung-tung-hurar-tung-tung-tung-sahur', name:'TUNG TUNG TUNG SAHUR', type:'Khúc gỗ nhân hình • Indonesia', desc:'Khúc gỗ biết đi cầm gậy bóng chày. Xuất hiện lúc 3h sáng trong Ramadan để đánh thức người. Kinh dị và buồn cười.', traits:['Terror Mode','3AM Horror','Wooden Bat','Night Patrol'], hp:88, atk:92, def:80, spd:75},
+  {id:'lirili-larila',          name:'LIRILI LARILA',           type:'Voi cactus • Sandal khổng lồ',  desc:'Voi lai cactus đi dép sandal khổng lồ. Nhân vật thiền định bí ẩn. Kiểm soát thời gian trong chiến đấu.', traits:['Time Control','Cactus Armor','Desert Walk','Mystical'], hp:80, atk:78, def:95, spd:55},
+  {id:'ballerina-cappucina',    name:'BALLERINA CAPPUCCINA',    type:'Ly cappuccino • Múa ballet',    desc:'Ly cappuccino đội váy tutu và đi giày ballet. Thanh lịch và kỳ lạ. Kết hôn cùng Cappuccino Assassino. Skin Fortnite 2026.', traits:['Ballet Dance','Coffee Power','Elegant','Fortnite Skin'], hp:70, atk:65, def:72, spd:88},
+  {id:'chimpanzini-bananini',   name:'CHIMPANZINI BANANINI',    type:'Khỉ tinh tinh • Chuối vàng',   desc:'Nửa khỉ nửa quả chuối xanh-vàng. Bất khả chiến bại theo lore. Ném chuối như lựu đạn nổ chậm.', traits:['Banana Bomb','Indestructible','Swing Mode','Sidekick'], hp:78, atk:80, def:78, spd:82},
+  {id:'bombombini-gusini',      name:'BOMBOMBINI GUSINI',       type:'Ngỗng • Máy bay chiến đấu F-16',desc:'Ngỗng lai máy bay chiến đấu F-16. Em trai của Bombardiro Crocodilo. Honk với tốc độ Mach 2.', traits:['Mach 2','Honk Missile','Fighter Jet','Bombardiro Bro'], hp:85, atk:93, def:75, spd:95},
+  {id:'brr-brr-patapim',        name:'BRR BRR PATAPIM',         type:'Khỉ mũi dài • Chân siêu to',  desc:'Khỉ vòi lai cây rừng với đôi chân siêu to kếch xù. Thổi bóng để bay. Kình địch của Tung Tung Sahur.', traits:['Giant Feet','Balloon Flight','Rival Sahur','Forest Power'], hp:82, atk:75, def:82, spd:72},
+  {id:'cappuccino-assassino',   name:'CAPPUCCINO ASSASSINO',    type:'Cà phê sát nhân • Áo choàng đen',desc:'Ly cappuccino mặc áo choàng đen cầm dao. Chồng của Ballerina Cappuccina. Cực kỳ ngon và cực kỳ nguy hiểm.', traits:['Poison Brew','Shadow Strike','Deadly Roast','Dark Ninja'], hp:88, atk:98, def:70, spd:90},
+  {id:'frigo-camelo',           name:'FRIGO CAMELO',            type:'Lạc đà • Tủ lạnh sa mạc',     desc:'Lạc đà có thân mình là tủ lạnh sống giữa sa mạc Sahara. Bạn thân của Lirili Larila. Hơi thở lạnh -20°C.', traits:['Ice Breath','Desert Cool','Food Storage','Camelo Freeze'], hp:75, atk:68, def:88, spd:58},
+  {id:'trippi-troppi-troppa-trippa', name:'TRIPPI TROPPI',      type:'Gấu béo • Đầu cá kỳ lạ',     desc:'Gấu béo phục phịch với đầu cá kỳ lạ. Thực hiện các hành vi người bình thường trong hoàn cảnh phi lý. Meme về cognitive dissonance.', traits:['Couch Potato','Fish Head','Relatable','Reality Break'], hp:72, atk:62, def:90, spd:40},
+  {id:'la-vaca-saturno-saturnita', name:'LA VACA SATURNO',      type:'Bò • Hành tinh Saturn',        desc:'Bò lai hành tinh Saturn với vành đai vũ trụ. Đứng trên hai chân người. Đến từ vũ trụ để cày ruộng.', traits:['Saturn Ring','Space Cow','Gravity Hooves','Cosmic Moo'], hp:82, atk:76, def:82, spd:65},
+  {id:'bobrito-bandito',        name:'BOBRITO BANDITO',         type:'Hải ly • Gangster Tommy Gun',  desc:'Hải ly mafia tay cầm súng Tommy Gun và đội mũ fedora đen. Xây đập kiêm rửa tiền. Đừng đùa với nó.', traits:['Tommy Gun','Dam Mafia','Fedora Boss','Wood Crime'], hp:80, atk:90, def:72, spd:78},
+  {id:'orangutini-ananasini',   name:'ORANGUTINI ANANASINI',    type:'Đười ươi • Dứa nhiệt đới',    desc:'Đười ươi lai dứa vàng. Sống trên cây dứa khổng lồ ở rừng nhiệt đới. Ném lõi dứa như phi tiêu.', traits:['Pineapple Throw','Tropical Power','Tree Swing','Spike Armor'], hp:76, atk:78, def:76, spd:80},
+  {id:'cocofanto-elefanto',     name:'COCOFANTO ELEFANTO',      type:'Voi • Dừa nhiệt đới',          desc:'Voi khổng lồ có đầu là quả dừa. Vòi hút và phun nước dừa ngọt. Đến từ đảo nhiệt đới huyền bí.', traits:['Coconut Head','Water Spray','Tropical Beast','Island Giant'], hp:84, atk:72, def:88, spd:52},
+  {id:'frulli-frulla',          name:'FRULLI FRULLA',           type:'Chim cánh cụt • Kính tròn xanh',desc:'Chim cánh cụt đội kính tròn xanh-vàng và cầm ly cà phê bốc khói. Hipster của brainrot universe. Viết thơ.', traits:['Coffee Drinker','Hipster Mode','Round Glasses','Poet Wing'], hp:68, atk:60, def:70, spd:72},
+  {id:'pot-hotspot',            name:'POT HOTSPOT',             type:'Bộ xương • WiFi nghiện',        desc:'Bộ xương người mặt người cầm điện thoại xin hotspot. Dùng hết data trong 5 phút xem YouTube 8K. Không thể sống thiếu WiFi.', traits:['Data Drain','WiFi Leech','Skeleton Mode','YouTube Addict'], hp:60, atk:55, def:65, spd:68},
+  {id:'burbaloni-lulilolli',    name:'BURBALONI LULILOLLI',     type:'Capybara • Trong quả dừa',     desc:'Capybara sống bên trong quả dừa. Bình tĩnh tuyệt đối trong mọi tình huống. Không có gì có thể làm nó mất bình tĩnh.', traits:['Zen Master','Coconut Home','Calm Aura','Capybara Chill'], hp:74, atk:58, def:92, spd:48},
+  {id:'tric-trac-baraboom',     name:'TRIC TRAC BARABOOM',      type:'Sóc • Bí ngòi • Chân người',  desc:'Sóc tổng hợp với bí ngòi và đôi chân người kỳ lạ. Vừa chạy vừa làm vườn. Gia đình của Tung Tung Sahur.', traits:['Garden Power','Squirrel Rush','Human Feet','Zucchini Bomb'], hp:72, atk:74, def:74, spd:82},
+  {id:'il-cacto-hipopotamo',    name:'IL CACTO HIPOPOTAMO',     type:'Hà mã • Cactus lai Lirili',    desc:'Hà mã lai cactus từ dòng họ Lirili Larila. Sống ở sa mạc cạnh hồ nước. Gai cactus trên lưng hà mã khổng lồ.', traits:['Hippo Charge','Cactus Spine','Desert Pool','Heavy Spike'], hp:86, atk:82, def:88, spd:45},
+];
+
+// image URL helper — uses the site's /thumb/ pattern
+function imgUrl(id){ return BASE + id + '.jpg'; }
+
+// Fallback image (pixel art style via canvas dataURL)
+function fallbackDataURL(name){
+  const c=document.createElement('canvas');c.width=200;c.height=200;
+  const ctx=c.getContext('2d');
+  const hue=Math.abs(name.split('').reduce((a,b)=>a+b.charCodeAt(0),0))%360;
+  ctx.fillStyle=`hsl(${hue},60%,10%)`; ctx.fillRect(0,0,200,200);
+  ctx.fillStyle=`hsl(${hue},80%,55%)`; ctx.font='80px serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🐾',100,90);
+  ctx.fillStyle=`hsl(${hue},60%,70%)`; ctx.font='bold 13px monospace';
+  ctx.fillText(name.slice(0,12),100,155);
+  return c.toDataURL();
+}
+
+// ═══════════════════ BG PARTICLES ═══════════════════
+const bgCv=document.getElementById('bg'), bgCtx=bgCv.getContext('2d');
+let pts=[];
+function resizeBg(){bgCv.width=innerWidth;bgCv.height=innerHeight}
+function initPts(){pts=Array.from({length:55},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.8+.4,c:['#00ff4120','#00f5ff20','#ff006e20','#ffbe0b20'][Math.floor(Math.random()*4)]}))}
+function animPts(){bgCtx.clearRect(0,0,bgCv.width,bgCv.height);pts.forEach(p=>{p.x=(p.x+p.vx+bgCv.width)%bgCv.width;p.y=(p.y+p.vy+bgCv.height)%bgCv.height;bgCtx.beginPath();bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);bgCtx.fillStyle=p.c;bgCtx.fill()});requestAnimationFrame(animPts)}
+addEventListener('resize',resizeBg);resizeBg();initPts();animPts();
+
+// ═══════════════════ STATE ═══════════════════
+let sel=[null,null], pickerSlot=null, fusionHistory=[];
+
+// ═══════════════════ SLOT DISPLAY ═══════════════════
+function setSlot(slot,m){
+  sel[slot-1]=m;
+  const img=document.getElementById('img'+slot);
+  const shim=document.getElementById('shim'+slot);
+  const ph=document.getElementById('ph'+slot);
+  ph.style.display='none';
+  shim.style.display='block';
+  img.style.opacity='0';
+  img.src=imgUrl(m.id);
+  img.onload=()=>{shim.style.display='none';img.style.opacity='1'};
+  img.onerror=()=>{shim.style.display='none';img.src=fallbackDataURL(m.name);img.style.opacity='1'};
+  document.getElementById('mname'+slot).textContent=m.name;
+  document.getElementById('mtype'+slot).textContent=m.type;
+  document.getElementById('mdesc'+slot).textContent=m.desc;
+  document.getElementById('mtraits'+slot).innerHTML=m.traits.map(t=>`<span class="trait">${t}</span>`).join('');
+  document.getElementById('mstats'+slot).innerHTML=
+    `<div class="stat">HP <div class="pwr-mini"><div class="pwr-mini-fill" style="width:${m.hp}%"></div></div><b>${m.hp}</b></div>`+
+    `<div class="stat">ATK <div class="pwr-mini"><div class="pwr-mini-fill" style="width:${m.atk}%;background:linear-gradient(90deg,#ff006e,#ffbe0b)"></div></div><b>${m.atk}</b></div>`+
+    `<div class="stat">DEF <div class="pwr-mini"><div class="pwr-mini-fill" style="width:${m.def}%;background:linear-gradient(90deg,#00f5ff,#bf5af2)"></div></div><b>${m.def}</b></div>`+
+    `<div class="stat">SPD <div class="pwr-mini"><div class="pwr-mini-fill" style="width:${m.spd}%;background:linear-gradient(90deg,#ffbe0b,#00ff41)"></div></div><b>${m.spd}</b></div>`;
+  document.getElementById('slot'+slot).classList.add('active');
+  checkFuse();sparks();
+}
+
+function checkFuse(){document.getElementById('btnFuse').disabled=!(sel[0]&&sel[1])}
+
+function randPick(slot){setSlot(slot,MONSTERS[Math.floor(Math.random()*MONSTERS.length)])}
+
+// ═══════════════════ PICKER ═══════════════════
+function openPicker(slot){
+  pickerSlot=slot;
+  document.getElementById('psearch').value='';
+  renderPGrid(MONSTERS);
+  document.getElementById('overlay').classList.add('on');
+}
+function closePicker(){document.getElementById('overlay').classList.remove('on');pickerSlot=null}
+function overlayClick(e){if(e.target===document.getElementById('overlay'))closePicker()}
+function filterP(q){renderPGrid(MONSTERS.filter(m=>m.name.toLowerCase().includes(q.toLowerCase())||m.type.toLowerCase().includes(q.toLowerCase())))}
+
+function renderPGrid(list){
+  document.getElementById('pgrid').innerHTML=list.map(m=>`
+    <div class="pcard" onclick="pickM('${m.id}')">
+      <img class="pcard-img" src="${imgUrl(m.id)}" alt="${m.name}" loading="lazy" onerror="this.src='${fallbackDataURL(m.name)}'"/>
+      <div class="pcard-name">${m.name}</div>
+    </div>`).join('');
+}
+
+function pickM(id){
+  const m=MONSTERS.find(x=>x.id===id);
+  if(!m||pickerSlot===null)return;
+  setSlot(pickerSlot,m);closePicker();
+}
+
+// ═══════════════════ FUSION ═══════════════════
+
+
+// ═══════════════════ LOCAL FUSION IMAGE V2 ═══════════════════
+// Vẽ fusion local có đặc điểm nhận diện của 2 quái cha mẹ.
+// Không còn dùng hình mặt cười chung chung nữa.
+function makeFusionLocalImage(f, m1, m2) {
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 512;
+  const ctx = c.getContext('2d');
+
+  function hashHue(str){
+    return Math.abs((str || 'fusion').split('').reduce((a,b)=>a+b.charCodeAt(0),0)) % 360;
+  }
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.lineTo(x+w-r,y);
+    ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);
+    ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);
+    ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);
+    ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+  }
+  function txt(t,x,y,size,color='white',font='serif'){
+    ctx.fillStyle=color;
+    ctx.font=`bold ${size}px ${font}`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(t,x,y);
+  }
+  function has(id){
+    return m1.id.includes(id) || m2.id.includes(id);
+  }
+
+  const hue1 = hashHue(m1.name);
+  const hue2 = hashHue(m2.name);
+  const hueF = hashHue(f.name);
+
+  // Background
+  const bg = ctx.createLinearGradient(0,0,512,512);
+  bg.addColorStop(0, `hsl(${hue1},80%,10%)`);
+  bg.addColorStop(0.45, '#16001f');
+  bg.addColorStop(1, `hsl(${hue2},80%,10%)`);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,512,512);
+
+  // Neon stars
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  const cols = ['#00ff41','#00f5ff','#ff006e','#ffbe0b','#bf5af2'];
+  for(let i=0;i<85;i++){
+    ctx.fillStyle = cols[i % cols.length];
+    ctx.beginPath();
+    ctx.arc(Math.random()*512, Math.random()*512, Math.random()*2.8+0.7, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Fusion glow
+  ctx.save();
+  ctx.shadowColor = '#ff006e';
+  ctx.shadowBlur = 42;
+
+  // Main body changes by parent type
+  let bodyColor = `hsl(${hueF},88%,55%)`;
+  if(has('il-cacto') || has('lirili')) bodyColor = '#38ff3f';
+  if(has('bombombini') || has('bombardiro')) bodyColor = '#5f7fff';
+  if(has('chimpanzini') || has('orangutini')) bodyColor = '#ffe135';
+  if(has('cocofanto') || has('burbaloni')) bodyColor = '#9b5a2e';
+  if(has('frigo')) bodyColor = '#9eefff';
+  if(has('cappuccino') || has('ballerina')) bodyColor = '#c08855';
+
+  ctx.fillStyle = bodyColor;
+  ctx.beginPath();
+  if(has('bombombini') || has('bombardiro')){
+    // aircraft body
+    roundRect(145,210,222,105,48);
+    ctx.fill();
+  } else if(has('il-cacto') || has('cocofanto') || has('lirili')){
+    // chunky beast body
+    ctx.ellipse(256,255,130,150,0,0,Math.PI*2);
+    ctx.fill();
+  } else {
+    ctx.ellipse(256,250,115,140,0,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+
+  // Cactus spikes / elephant / hippo features
+  if(has('il-cacto') || has('lirili')){
+    ctx.fillStyle = '#ccffcc';
+    for(let x=155; x<=355; x+=34){
+      ctx.beginPath();
+      ctx.moveTo(x,145+Math.random()*30);
+      ctx.lineTo(x-9,180+Math.random()*25);
+      ctx.lineTo(x+9,180+Math.random()*25);
+      ctx.closePath();
+      ctx.fill();
+    }
+    txt('🌵',166,190,56);
+    txt('🌵',348,190,56);
+  }
+
+  // Plane / jet wings
+  if(has('bombombini') || has('bombardiro')){
+    ctx.save();
+    ctx.fillStyle = '#d9e7ff';
+    ctx.strokeStyle = '#00f5ff';
+    ctx.lineWidth = 4;
+
+    ctx.beginPath();
+    ctx.moveTo(190,245);
+    ctx.lineTo(52,170);
+    ctx.lineTo(172,300);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(322,245);
+    ctx.lineTo(460,170);
+    ctx.lineTo(340,300);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = '#ff006e';
+    ctx.beginPath();
+    ctx.moveTo(365,217);
+    ctx.lineTo(455,253);
+    ctx.lineTo(365,289);
+    ctx.closePath();
+    ctx.fill();
+
+    txt('✈️',256,250,62);
+    ctx.restore();
+  }
+
+  // Head / animal face
+  let headEmoji = '🧬';
+  if(has('bombombini')) headEmoji = '🪿';
+  else if(has('bombardiro')) headEmoji = '🐊';
+  else if(has('il-cacto')) headEmoji = '🦛';
+  else if(has('tralalero')) headEmoji = '🦈';
+  else if(has('chimpanzini')) headEmoji = '🐒';
+  else if(has('lirili') || has('cocofanto')) headEmoji = '🐘';
+  else if(has('ballerina') || has('cappuccino')) headEmoji = '☕';
+  else if(has('frigo')) headEmoji = '🧊';
+  else if(has('pot-hotspot')) headEmoji = '💀';
+  else if(has('la-vaca')) headEmoji = '🐄';
+  else if(has('bobrito')) headEmoji = '🦫';
+  else if(has('orangutini')) headEmoji = '🦧';
+  else if(has('burbaloni')) headEmoji = ' capy';
+  else if(has('frulli')) headEmoji = '🐧';
+
+  txt(headEmoji,256,145,78);
+
+  // Trait symbols from parents
+  const symbols = [];
+  if(has('chimpanzini')) symbols.push(['🍌',115,315,48]);
+  if(has('orangutini')) symbols.push(['🍍',115,315,48]);
+  if(has('cocofanto') || has('burbaloni')) symbols.push(['🥥',397,315,48]);
+  if(has('pot-hotspot')) symbols.push(['📶',397,315,48]);
+  if(has('bobrito')) symbols.push(['🔫',115,315,48]);
+  if(has('ballerina')) symbols.push(['🩰',115,315,48]);
+  if(has('cappuccino')) symbols.push(['🗡️',397,315,48]);
+  if(has('la-vaca')) symbols.push(['🪐',397,315,48]);
+  if(has('frigo')) symbols.push(['❄️',115,315,48]);
+  if(has('tung')) symbols.push(['🪵',115,315,48]);
+  if(has('brr-brr')) symbols.push(['🦶',397,315,48]);
+  if(has('trippi')) symbols.push(['🐟',397,315,48]);
+  if(has('tric-trac')) symbols.push(['🥒',397,315,48]);
+
+  symbols.slice(0,4).forEach(s=>txt(s[0],s[1],s[2],s[3]));
+
+  // Power ring
+  ctx.save();
+  ctx.strokeStyle = '#ffbe0b';
+  ctx.lineWidth = 5;
+  ctx.setLineDash([12,8]);
+  ctx.beginPath();
+  ctx.ellipse(256,255,178,178,0,0,Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+
+  // Bottom label panel
+  ctx.save();
+  const labelGrad = ctx.createLinearGradient(60,380,452,500);
+  labelGrad.addColorStop(0,'rgba(0,0,0,.82)');
+  labelGrad.addColorStop(1,'rgba(255,0,110,.35)');
+  ctx.fillStyle = labelGrad;
+  roundRect(46,375,420,112,22);
+  ctx.fill();
+
+  ctx.fillStyle = '#ff006e';
+  ctx.font = 'bold 25px monospace';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('FUSION RESULT',256,407);
+
+  ctx.fillStyle = '#ffbe0b';
+  ctx.font = 'bold 24px monospace';
+  ctx.fillText((f.name || 'UNKNOWN FUSION').slice(0,24),256,440);
+
+  ctx.fillStyle = '#00f5ff';
+  ctx.font = 'bold 13px monospace';
+  ctx.fillText(`${m1.name.split(' ')[0]} + ${m2.name.split(' ')[0]}`,256,466);
+  ctx.restore();
+
+  return c.toDataURL('image/png');
+}
+
+
+
+async function fetchFusionFromServer(m1,m2){
+  const resp = await fetch('/api/fusion', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({monster1:m1, monster2:m2})
+  });
+  if(!resp.ok){
+    const tx = await resp.text();
+    throw new Error(`Server lỗi ${resp.status}: ${tx.slice(0,160)}`);
+  }
+  return await resp.json();
+}
+
+const LOAD_MSGS=['ĐANG PHÂN TÍCH ADN...','KẾT HỢP GENE BRAINROT...','AI ĐANG VẼ SINH VẬT MỚI...','SYNTHESIS IN PROGRESS...','COMPUTING ABSURDITY LEVEL...','TỔNG HỢP QUÁI VẬT...'];
+
+async function doFusion(){
+  if(!sel[0]||!sel[1])return;
+  const m1=sel[0],m2=sel[1];
+  document.getElementById('result').classList.remove('on');
+  document.getElementById('loading').classList.add('on');
+  document.getElementById('btnFuse').disabled=true;
+  document.getElementById('btnFuse').classList.add('busy');
+  const aiStatus=document.getElementById('aiStatus');
+  if(aiStatus) aiStatus.innerHTML='⏳ <b>SERVER AI</b> · Đang tạo fusion bằng backend...';
+  let mi=0;
+  const tick=setInterval(()=>{document.getElementById('loadTxt').textContent=LOAD_MSGS[mi++%LOAD_MSGS.length]},550);
+
+  try{
+    const fusion = await fetchFusionFromServer(m1,m2);
+    clearInterval(tick);
+    document.getElementById('loading').classList.remove('on');
+    document.getElementById('btnFuse').classList.remove('busy');
+    document.getElementById('btnFuse').disabled=false;
+    if(aiStatus) aiStatus.innerHTML='✅ <b>SERVER AI</b> · Fusion tạo thành công từ backend.';
+    showResult(fusion,m1,m2);
+  }catch(e){
+    clearInterval(tick);
+    document.getElementById('loading').classList.remove('on');
+    document.getElementById('btnFuse').classList.remove('busy');
+    document.getElementById('btnFuse').disabled=false;
+    if(aiStatus) aiStatus.innerHTML='⚠️ Backend lỗi, đang fallback local: '+e.message;
+    showResult(localFusion(m1,m2),m1,m2);
+  }
+}
+
+function localFusion(m1,m2){
+  const a=m1.name.split(' '),b=m2.name.split(' ');
+  return {
+    name:`${a[0]}INO ${b[b.length-1]}ILLO`,
+    type:`${m1.type.split('•')[0].trim()} • ${m2.type.split('•')[1]?.trim()||'Hybrid'}`,
+    description:`Sinh vật điên rồ kết hợp ${m1.name} và ${m2.name}. Không ai hiểu nó nhưng tất cả đều run rẩy trước sự kỳ lạ của nó.`,
+    lore:`Được tạo ra trong một vụ nổ phòng lab bí mật của Italian Brainrot Universe năm 2025.`,
+    abilities:[...m1.traits.slice(0,2),...m2.traits.slice(0,2)],
+    rarity:['rare','epic','legendary'][Math.floor(Math.random()*3)],
+    power:Math.min(100,Math.round((m1.atk+m2.atk)/2+10)),
+    hp:Math.round((m1.hp+m2.hp)/2),atk:Math.round((m1.atk+m2.atk)/2),
+    def:Math.round((m1.def+m2.def)/2),spd:Math.round((m1.spd+m2.spd)/2),
+    imagePrompt:`fusion of ${m1.name} and ${m2.name} Italian brainrot AI art style surreal funny vibrant`
+  };
+}
+
+function showResult(f,m1,m2){
+  const localUrl = makeFusionLocalImage(f, m1, m2);
+  const fusionImgUrl = f.image_data_url || f.imageDataUrl || f.image_url || f.imageUrl || localUrl;
+
+  const fImg=document.getElementById('fImg');
+  const fShim=document.getElementById('fShim');
+  const aiStatus=document.getElementById('aiStatus');
+  fShim.style.display='block';
+  fImg.style.opacity='0';
+
+  fImg.onload=()=>{
+    fShim.style.display='none';
+    fImg.style.opacity='1';
+  };
+  fImg.onerror=()=>{
+    fShim.style.display='none';
+    fImg.src=localUrl;
+    fImg.style.opacity='1';
+    if(aiStatus) aiStatus.innerHTML='⚠️ Ảnh server lỗi · đã dùng ảnh local fallback.';
+  };
+  fImg.src=fusionImgUrl;
+
+  document.getElementById('fBadge').textContent=f.name;
+  document.getElementById('rName').textContent=f.name;
+  document.getElementById('rParents').innerHTML=`<b>${m1.name.split(' ')[0]}</b> ⚡ <b>${m2.name.split(' ')[0]}</b>`;
+  const rar=f.rarity||'rare';
+  document.getElementById('rRarity').innerHTML=`<span class="rarity-badge ${rar}">${rar.toUpperCase()}</span>`;
+  document.getElementById('rDesc').textContent=f.description;
+  document.getElementById('rLore').textContent='✦ '+(f.lore||'');
+  document.getElementById('rAbilities').innerHTML=(f.abilities||[]).map(a=>`<span class="rability">${a}</span>`).join('');
+  const pw=f.power||70;
+  document.getElementById('rPwrNum').textContent=pw;
+  setTimeout(()=>document.getElementById('rPwrFill').style.width=pw+'%',120);
+  document.getElementById('result').classList.add('on');
+  addHistory(f,m1,m2,fusionImgUrl);
+  for(let i=0;i<20;i++)setTimeout(sparks,i*40);
+}
+
+function addHistory(f,m1,m2,imgUrl){
+  fusionHistory.unshift({f,m1,m2,imgUrl});
+  if(fusionHistory.length>10)fusionHistory.pop();
+  document.getElementById('histSec').style.display='block';
+  document.getElementById('hgrid').innerHTML=fusionHistory.map(h=>`
+    <div class="hcard">
+      <img class="hcard-img" src="${h.imgUrl}" alt="${h.f.name}" loading="lazy" onerror="this.src=makeFusionLocalImage(h.f,h.m1,h.m2)"/>
+      <div class="hcard-name">${h.f.name}</div>
+      <div class="hcard-par">${h.m1.name.split(' ')[0]} + ${h.m2.name.split(' ')[0]}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════ SPARKS ═══════════════════
+function sparks(){
+  const cx=innerWidth/2,cy=innerHeight*.3,cols=['#00ff41','#00f5ff','#ff006e','#ffbe0b','#bf5af2'];
+  for(let i=0;i<7;i++){
+    const s=document.createElement('div');s.className='spark';
+    const a=Math.random()*Math.PI*2,d=60+Math.random()*140;
+    s.style.setProperty('--dx',Math.cos(a)*d+'px');
+    s.style.setProperty('--dy',Math.sin(a)*d+'px');
+    s.style.left=(cx+Math.random()*80-40)+'px';
+    s.style.top=(cy+Math.random()*80-40)+'px';
+    s.style.background=cols[Math.floor(Math.random()*cols.length)];
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),900);
+  }
+}
+
+// ═══════════════════ INIT ═══════════════════
+renderPGrid(MONSTERS);
+</script>
+</body>
+</html>
